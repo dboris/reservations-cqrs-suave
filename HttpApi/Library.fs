@@ -1,4 +1,8 @@
 namespace HttpApi
 
-module Say = 
-    let hello name = printfn "Hello %s" name
+open Suave
+open Suave.Filters
+open Suave.Operators
+
+module Api = 
+    let main = choose [ GET >=> Successful.OK "Hello" ]

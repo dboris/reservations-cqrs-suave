@@ -8,4 +8,7 @@
     <Compile Include="Library.fs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Suave" Version="2.2.1" />
+  </ItemGroup>
 </Project>

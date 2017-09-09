@@ -12,4 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="..\HttpApi\HttpApi.fsproj" />
   </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Suave" Version="2.2.1" />
+  </ItemGroup>
 </Project>
