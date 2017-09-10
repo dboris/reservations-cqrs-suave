@@ -4,6 +4,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Messages.fs" />
+    <Compile Include="DomainModel.fs" />
+    <Compile Include="Resource.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
   <ItemGroup>

@@ -3,8 +3,18 @@
 open System
 
 // The HttpApi is a Message Endpoint. Need to convert Http traffic to messages. Put each message in an envelope.
+
+// Command to make reservation
 [<CLIMutable>]
 type MakeReservation =
+  { Date : DateTime
+    Name : string
+    Email : string
+    Quantity : int }
+
+// Message that a reservation was made
+[<CLIMutable>]
+type Reservation =
   { Date : DateTime
     Name : string
     Email : string
