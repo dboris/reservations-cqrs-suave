@@ -13,6 +13,7 @@ type Agent<'T> = FSharp.Control.MailboxProcessor<'T>
 // The controller for reservations can publish MakeReservation commands
 module ReservationsController =
     open Reservations
+    open Rest
 
     let subject = new Subject<Envelope<MakeReservation>> ()  // Dispose?
     let reservationsObservable =
@@ -59,13 +60,14 @@ module ReservationsController =
         match getResourceFromReq req with
         | Some r -> postReservation r
         | None -> RequestErrors.BAD_REQUEST "Bad request"
-    let routes = 
-        path "/res" 
-        >=> POST 
-        >=> request handleMakeReservationRequest
+    let reservationsResourceRoute = rest "reservations" {
+        GetAll = Db.getReservations
+        Create = handleMakeReservationRequest
+    }
+    let routes = reservationsResourceRoute
 
 module Api = 
     let main = 
         choose 
-          [ GET >=> Successful.OK "Hello" 
-            ReservationsController.routes ]
+          [ ReservationsController.routes
+            RequestErrors.NOT_FOUND "Not found" ]
