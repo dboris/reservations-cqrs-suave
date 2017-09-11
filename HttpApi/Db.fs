@@ -1,12 +1,11 @@
 ﻿module HttpApi.Db
 
 open System
-open Reservations
 
 let private reservations = Collections.Concurrent.ConcurrentBag<Envelope<Reservation>> ()
 
 type ReservationsInMemory (reservations) =
-    interface IReservations with
+    interface Reservations.IReservations with
         member __.Between min max =
             reservations
             |> Seq.filter (fun r -> let date = r.Item.Date in min <= date && date <= max)
