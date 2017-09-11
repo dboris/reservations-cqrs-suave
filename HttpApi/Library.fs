@@ -19,7 +19,6 @@ module ReservationsController =
         { new IObservable<Envelope<MakeReservation>> with
             member __.Subscribe observer = subject.Subscribe observer }
     let seatingCapacity = 10
-    let reservations = Collections.Concurrent.ConcurrentBag<Envelope<Reservation>> ()
 
     [<CLIMutable>]
     type MakeReservationRendition =
@@ -29,35 +28,41 @@ module ReservationsController =
         Quantity : int }
 
     let postReservation (rendition : MakeReservationRendition) =
-        let cmd : Envelope<MakeReservation> =
-            { MakeReservation.Date = DateTime.Parse rendition.Date
-              Name = rendition.Name
-              Email = rendition.Email
-              Quantity = rendition.Quantity 
-            } 
-            |> envelopWithDefaults
-        subject.OnNext cmd
-        Successful.ACCEPTED "Accepted"
+        try
+            let cmd : Envelope<MakeReservation> =
+                { MakeReservation.Date = DateTime.Parse rendition.Date
+                  Name = rendition.Name
+                  Email = rendition.Email
+                  Quantity = rendition.Quantity 
+                } 
+                |> envelopWithDefaults
+            subject.OnNext cmd
+            Successful.ACCEPTED "Accepted"
+        with
+        | _ -> RequestErrors.BAD_REQUEST "Bad request"
 
     let agent = new Agent<Envelope<MakeReservation>> (fun inbox ->
         let rec loop () =
             async {
                 let! cmd = inbox.Receive ()
-                let rs = reservations |> toReservations
+                let rs = Db.toReservations
                 match handle seatingCapacity rs cmd with
                 | Some r -> 
-                    reservations.Add r
+                    Db.addReservation r
                     printfn "Added reservation: %A" r
-                    printfn "All: %A" reservations
                 | None -> ()
                 return! loop () }
         loop ())
     agent.Start ()
     let sub = reservationsObservable.Subscribe agent.Post  // Dispose?
+    let handleMakeReservationRequest (req : HttpRequest) =
+        match getResourceFromReq req with
+        | Some r -> postReservation r
+        | None -> RequestErrors.BAD_REQUEST "Bad request"
     let routes = 
         path "/res" 
         >=> POST 
-        >=> request (getResourceFromReq >> postReservation)
+        >=> request handleMakeReservationRequest
 
 module Api = 
     let main = 
