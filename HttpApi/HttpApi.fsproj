@@ -8,6 +8,7 @@
     <Compile Include="Db.fs" />
     <Compile Include="SuaveJson.fs" />
     <Compile Include="Resource.fs" />
+    <Compile Include="ReservationsController.fs" />
     <Compile Include="Library.fs" />
   </ItemGroup>
   <ItemGroup>
