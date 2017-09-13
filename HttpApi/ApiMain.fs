@@ -4,7 +4,8 @@ open System
 open Suave
 
 
-let main = 
+let main (reservationsStore : Db.IReservationsRepo) = 
+    let resController = ReservationsController (reservationsStore)
     choose 
-      [ ReservationsController.routes
+      [ resController.Routes
         RequestErrors.NOT_FOUND "Not found" ]

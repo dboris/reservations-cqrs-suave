@@ -1,7 +1,12 @@
 ﻿namespace HttpApi
 
 open System
+open System.Reactive
+open FSharp.Control.Reactive
 open Suave
+
+open Reservations
+open Rest
 
 
 type Agent<'T> = FSharp.Control.MailboxProcessor<'T>
@@ -12,9 +17,7 @@ type MakeReservationRendition =
     Email : string
     Quantity : int }
 
-module ReservationsController =
-    open Reservations
-    open Rest
+type ReservationsController (repo : Db.IReservationsRepo) =
 
     // The controller for reservations can publish MakeReservation commands
     let subject = new Reactive.Subjects.Subject<Envelope<MakeReservation>> ()  // Dispose?
@@ -41,22 +44,25 @@ module ReservationsController =
         let rec loop () =
             async {
                 let! cmd = inbox.Receive ()
-                let rs = Db.toReservations
+                let rs = repo.ToReservations
                 match handle seatingCapacity rs cmd with
                 | Some r -> 
-                    Db.addReservation r
+                    repo.Add r
                     printfn "Added reservation: %A" r
                 | None -> ()
                 return! loop () }
         loop ())
-    agent.Start ()
     let sub = reservationsObservable.Subscribe agent.Post  // Dispose?
     let handleMakeReservationRequest (req : HttpRequest) =
         match getResourceFromReq req with
         | Some r -> postReservation r
         | None -> RequestErrors.BAD_REQUEST "Bad request"
     let reservationsResourceRoute = rest "reservations" {
-        GetAll = Db.getReservations
+        GetAll = repo.GetReservations
         Create = handleMakeReservationRequest
     }
-    let routes = reservationsResourceRoute
+
+    do agent.Start ()
+
+    member __.Routes 
+        with get () = reservationsResourceRoute

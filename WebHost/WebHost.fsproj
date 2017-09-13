@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\HttpApi\HttpApi.fsproj" />
+    <ProjectReference Include="..\ReservationsRepo\ReservationsRepo.fsproj" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Suave" Version="2.2.1" />
